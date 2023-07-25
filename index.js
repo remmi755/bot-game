@@ -1,6 +1,26 @@
 const TelegramApi = require('node-telegram-bot-api')
 const {gameOptions, againOptions} = require('./options')
 
+const mongoose = require('mongoose');
+const UserModel = require('./models/User')
+
+
+
+
+mongoose.connect('mongodb+srv://remmi:wwwwww@cluster0.j5xu8.mongodb.net/')
+    .then(() => {
+        console.log("DB ok")
+    }) .catch((err) => {
+    console.log("error", err)
+})
+
+const doc = new UserModel({
+    chatId :req.body.chatId,
+    fullName :req.body.fullName,
+    right :req.body.right,
+    wrong :req.body.wrong,
+})
+
 const token = '6241235002:AAGO54nNg5GlKS5VJBjnkr1wQiFpRUNRmvk'
 
 const bot = new TelegramApi(token, {polling: true})
