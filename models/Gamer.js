@@ -5,8 +5,7 @@ const GamerShema = new mongoose.Schema({
         type: Number,
         require: true,
         unique: true,
-        defaultValue: 1,
-        autoIncrement: true
+        defaultValue: 1
     },
     chatId: {
         type: String,

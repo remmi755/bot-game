@@ -1,7 +1,6 @@
 import UserModel from '../models/Gamer.js'
 
 export const createGamer = async (msg) => {
-    console.log("MSG", msg)
     try {
         const doc = new UserModel({
             id: 1,

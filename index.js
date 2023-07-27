@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 import TelegramApi from 'node-telegram-bot-api';
 import {gameOptions, againOptions} from './options.js';
 
-import UserModel from './models/Gamer.js';
+import GamerModel from './models/Gamer.js';
 import {createGamer} from "./controllers/GameControllers.js";
 
 const app = express();
@@ -28,7 +28,6 @@ const start = async () => {
         })
 
     bot.on('message', async msg => {
-        // console.log(msg)
         const text = msg.text;
         const chatId = msg.chat.id;
 
@@ -39,7 +38,7 @@ const start = async () => {
         ])
 
         await createGamer(msg);
-        const gamer = await UserModel.findOne({chatId});
+        const gamer = await GamerModel.findOne({chatId});
 
         try {
             if (text === '/start') {
@@ -49,7 +48,7 @@ const start = async () => {
 
             if (text === '/info') {
                 const answer = await bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name} ${msg.from.last_name ? msg.from.last_name : ''}, в игре у тебя правильных ответов: ${gamer.right}, неправильных: ${gamer.wrong}`)
-                await UserModel.findOneAndDelete({chatId})
+                await GamerModel.findOneAndDelete({chatId})
                 return answer
             }
 
@@ -70,17 +69,17 @@ const start = async () => {
             return await startGame(chatId)
         }
 
-        const user = await UserModel.findOne({chatId})
+        const gamer = await GamerModel.findOne({chatId})
 
         if (data === chats[chatId].toString()) {
-            user.right += 1;
+            gamer.right += 1;
             await bot.sendMessage(chatId, `Поздравляю, ты угадал цифру ${chats[chatId]}`, againOptions)
         } else {
-            user.wrong += 1;
+            gamer.wrong += 1;
             await bot.sendMessage(chatId, ` К сожалению ты не угадал, бот загадал цифру ${chats[chatId]}`, againOptions)
         }
 
-        await user.save();
+        await gamer.save();
     })
 }
 
