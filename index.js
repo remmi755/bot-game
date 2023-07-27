@@ -1,30 +1,15 @@
-const TelegramApi = require('node-telegram-bot-api')
-const {gameOptions, againOptions} = require('./options')
+import express from "express"
+import mongoose from 'mongoose';
 
-const mongoose = require('mongoose');
-const UserModel = require('./models/User')
+import TelegramApi from 'node-telegram-bot-api';
+import {gameOptions, againOptions} from './options.js';
 
+import UserModel from './models/Gamer.js';
+import {createGamer} from "./controllers/GameControllers.js";
 
-
-
-mongoose.connect('mongodb+srv://remmi:wwwwww@cluster0.j5xu8.mongodb.net/')
-    .then(() => {
-        console.log("DB ok")
-    }) .catch((err) => {
-    console.log("error", err)
-})
-
-const doc = new UserModel({
-    chatId :req.body.chatId,
-    fullName :req.body.fullName,
-    right :req.body.right,
-    wrong :req.body.wrong,
-})
-
+const app = express();
 const token = '6241235002:AAGO54nNg5GlKS5VJBjnkr1wQiFpRUNRmvk'
-
 const bot = new TelegramApi(token, {polling: true})
-
 const chats = {}
 
 const startGame = async (chatId) => {
@@ -34,7 +19,14 @@ const startGame = async (chatId) => {
     await bot.sendMessage(chatId, 'Отгадывай!', gameOptions)
 }
 
-const start = () => {
+const start = async () => {
+    await mongoose.connect('mongodb+srv://remmi:wwwwww@cluster0.j5xu8.mongodb.net/gamer')
+        .then(() => {
+            console.log("DB ok")
+        }).catch((err) => {
+            console.log("error", err)
+        })
+
     bot.on('message', async msg => {
         // console.log(msg)
         const text = msg.text;
@@ -46,20 +38,28 @@ const start = () => {
             {command: '/game', description: 'Игра: Угадай цифру'},
         ])
 
-        if (text === '/start') {
-            await bot.sendSticker(chatId, 'https://cdn.tlgrm.app/stickers/463/343/46334338-7539-4dae-bfb6-29e0bb04dc2d/192/7.webp')
-            return bot.sendMessage(chatId, `Добро пожаловать в чат Романа ${text}`)
-        }
+        await createGamer(msg);
+        const gamer = await UserModel.findOne({chatId});
 
-        if (text === '/info') {
-            return bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name} ${msg.from.last_name ? msg.from.last_name : ''}`)
-        }
+        try {
+            if (text === '/start') {
+                await bot.sendSticker(chatId, 'https://cdn.tlgrm.app/stickers/463/343/46334338-7539-4dae-bfb6-29e0bb04dc2d/192/7.webp')
+                return bot.sendMessage(chatId, `Добро пожаловать в чат Романа ${text}`)
+            }
 
-        if (text === '/game') {
-            return startGame(chatId)
-        }
+            if (text === '/info') {
+                const answer = await bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name} ${msg.from.last_name ? msg.from.last_name : ''}, в игре у тебя правильных ответов: ${gamer.right}, неправильных: ${gamer.wrong}`)
+                await UserModel.findOneAndDelete({chatId})
+                return answer
+            }
 
-        return bot.sendMessage(chatId, 'Я тебя не понимаю, попробуй еще раз!')
+            if (text === '/game') {
+                return startGame(chatId)
+            }
+            return bot.sendMessage(chatId, 'Я тебя не понимаю, попробуй еще раз!')
+        } catch (e) {
+            return bot.sendMessage(chatId, 'Произошла какая-то ошибка')
+        }
     })
 
     bot.on('callback_query', async msg => {
@@ -70,12 +70,26 @@ const start = () => {
             return await startGame(chatId)
         }
 
+        const user = await UserModel.findOne({chatId})
+
         if (data === chats[chatId].toString()) {
-            return await bot.sendMessage(chatId, `Поздравляю, ты угадал цифру ${chats[chatId]}`, againOptions)
+            user.right += 1;
+            await bot.sendMessage(chatId, `Поздравляю, ты угадал цифру ${chats[chatId]}`, againOptions)
         } else {
-            return await bot.sendMessage(chatId, ` К сожалению ты не угадал, бот загадал цифру ${chats[chatId]}`, againOptions)
+            user.wrong += 1;
+            await bot.sendMessage(chatId, ` К сожалению ты не угадал, бот загадал цифру ${chats[chatId]}`, againOptions)
         }
+
+        await user.save();
     })
 }
 
 start();
+
+app.listen(5555, (err) => {
+    if (err) {
+        console.log(err)
+    }
+
+    console.log('Server Ok')
+})
