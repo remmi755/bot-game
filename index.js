@@ -30,17 +30,12 @@ const start = async () => {
     bot.on('message', async msg => {
         const text = msg.text;
         const chatId = msg.chat.id;
-        console.log('msg', msg)
+
         bot.setMyCommands([
             {command: '/start', description: 'Начальное приветствие'},
             {command: '/info', description: 'Получить информацию о пользователе'},
             {command: '/game', description: 'Игра: Угадай цифру'},
-            // {command: '/end', description: 'Закончить игру'},
         ])
-
-
-        // const gamers = await GamerModel.find()
-
 
             await createGamer(msg);
 
@@ -61,9 +56,7 @@ const start = async () => {
             if (text === '/game') {
                 return startGame(chatId)
             }
-            // if (text === '/end') {
-            //     return await GamerModel.findOneAndDelete({chatId})
-            // }
+
             return bot.sendMessage(chatId, 'Я тебя не понимаю, попробуй еще раз!')
         } catch (e) {
             return bot.sendMessage(chatId, 'Произошла какая-то ошибка')
