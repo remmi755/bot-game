@@ -1,9 +1,10 @@
 import UserModel from '../models/Gamer.js'
+import GamerModel from "../models/Gamer.js";
 
 export const createGamer = async (msg) => {
     try {
         const doc = new UserModel({
-            id: 1,
+            id: msg.message_id,
             chatId: msg.chat.id,
             right: 0,
             wrong: 0
