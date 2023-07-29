@@ -32,6 +32,7 @@ const start = async () => {
     bot.on('message', async msg => {
         const text = msg.text;
         const chatId = msg.chat.id;
+        const id = msg.message_id
 
         console.log(msg)
 
@@ -53,7 +54,7 @@ const start = async () => {
 
             if (text === '/info') {
                 const answer = await bot.sendMessage(chatId, `Тебя зовут ${msg.from.first_name} ${msg.from.last_name ? msg.from.last_name : ''}, в игре у тебя правильных ответов: ${gamer.right}, неправильных: ${gamer.wrong}`)
-                await GamerModel.findOneAndDelete({chatId})
+                await GamerModel.findOneAndDelete({id})
                 return answer
             }
 
