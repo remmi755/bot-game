@@ -20,8 +20,10 @@ const startGame = async (chatId) => {
     await bot.sendMessage(chatId, 'Отгадывай!', gameOptions)
 }
 
+await connectMongoDB;
+
 const start = async () => {
-    await connectMongoDB;
+    // await connectMongoDB;
         // mongoose.connect('mongodb+srv://remmi:wwwwww@cluster0.j5xu8.mongodb.net/gamer')
         // .then(() => {
         //     console.log("DB ok")
@@ -35,6 +37,7 @@ const start = async () => {
         const id = msg.message_id
 
         console.log(msg)
+        console.log(id)
 
         bot.setMyCommands([
             {command: '/start', description: 'Начальное приветствие'},
