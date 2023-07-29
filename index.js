@@ -1,5 +1,6 @@
 import express from "express"
 import mongoose from 'mongoose';
+import connectMongoDB from "./connect.js";
 
 import TelegramApi from 'node-telegram-bot-api';
 import {gameOptions, againOptions} from './options.js';
@@ -20,16 +21,19 @@ const startGame = async (chatId) => {
 }
 
 const start = async () => {
-    await mongoose.connect('mongodb+srv://remmi:wwwwww@cluster0.j5xu8.mongodb.net/gamer')
-        .then(() => {
-            console.log("DB ok")
-        }).catch((err) => {
-            console.log("error", err)
-        })
+    await connectMongoDB;
+        // mongoose.connect('mongodb+srv://remmi:wwwwww@cluster0.j5xu8.mongodb.net/gamer')
+        // .then(() => {
+        //     console.log("DB ok")
+        // }).catch((err) => {
+        //     console.log("error", err)
+        // })
 
     bot.on('message', async msg => {
         const text = msg.text;
         const chatId = msg.chat.id;
+
+        console.log(msg)
 
         bot.setMyCommands([
             {command: '/start', description: 'Начальное приветствие'},
