@@ -1,6 +1,10 @@
 import mongoose from 'mongoose';
 
 const GamerShema = new mongoose.Schema({
+    userName: {
+        type: String,
+        require: true,
+    },
     id: {
         type: Number,
         require: true,
